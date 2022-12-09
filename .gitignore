@@ -1,2 +1,4 @@
 debug/
 target/
+node_modules/
+.next
