@@ -45,7 +45,7 @@ fn read_task() -> Json<Vec<String>> {
         .append(true)
         .create(true)
         .open("tasks.txt")
-        .expect("didn't read write lad");
+        .expect("didn't read right lad");
     let reader = BufReader::new(tasks);
     Json(
         reader
