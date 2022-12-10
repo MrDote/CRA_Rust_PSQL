@@ -1,2 +1,2 @@
-[default.database.todo]
+[default.databases.todo]
 url = "postgres://postgres:password@localhost:5432/todo"

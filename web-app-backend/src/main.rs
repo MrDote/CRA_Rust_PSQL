@@ -1,16 +1,7 @@
-#[macro_use]
-extern crate rocket;
-use rocket::{serde::{json::Json, Deserialize, Serialize, self}, response::Responder, Request, http::{Status}};
-use rocket_db_pools::{Database, Connection};
-use sqlx::database;
-use std::{
-    fs::OpenOptions,
-    io::{BufRead, BufReader, Write},
-};
+#[macro_use] extern crate rocket;
 
-#[derive(Database)]
-#[database("todo")]
-struct TodoDatabase(sqlx::PgPool);
+use rocket::{serde::{Deserialize, json::Json, Serialize}, response::{Responder, self}, http::{Status}, Request};
+use rocket_db_pools::{Database, Connection};
 
 #[derive(Deserialize, Serialize, sqlx::FromRow)]
 #[serde(crate = "rocket::serde")]
@@ -31,10 +22,14 @@ struct TaskId {
     id: i64
 }
 
+#[derive(Database)]
+#[database("todo")]
+struct TodoDatabase(sqlx::PgPool);
+
 struct DatabaseError(rocket_db_pools::sqlx::Error);
 
 impl<'r> Responder<'r, 'r> for DatabaseError {
-    fn respond_to(self, request: &Request) -> rocket::response::Result<'r> {
+    fn respond_to(self, _request: &Request) -> response::Result<'r> {
         Err(Status::InternalServerError)
     }
 }
@@ -47,20 +42,24 @@ impl From<rocket_db_pools::sqlx::Error> for DatabaseError {
 
 #[post("/addtask", data="<task>")]
 async fn add_task(task: Json<TaskItem<'_>>, mut db: Connection<TodoDatabase>) -> Result<Json<Task>, DatabaseError> {
+    println!("You got here");
+
     let added_task = sqlx::query_as::<_, Task>("INSERT INTO tasks (item) VALUES ($1) RETURNING *")
         .bind(task.item)
         .fetch_one(&mut *db)
         .await?;
-        
+
+    println!("You got almost to the end");
+    
     Ok(Json(added_task))
 }
 
-#[get("/readtask")]
-async fn read_task(mut db: Connection<TodoDatabase>) -> Result<Json<Vec<Task>>, DatabaseError> {
+#[get("/readtasks")]
+async fn read_tasks(mut db: Connection<TodoDatabase>) -> Result<Json<Vec<Task>>, DatabaseError> {
     let all_tasks = sqlx::query_as::<_, Task>("SELECT * FROM tasks")
         .fetch_all(&mut *db)
         .await?;
-    
+
     Ok(Json(all_tasks))
 }
 
@@ -71,16 +70,17 @@ async fn edit_task(task_update: Json<Task>, mut db: Connection<TodoDatabase>) ->
         .bind(task_update.id)
         .fetch_one(&mut *db)
         .await?;
-    
+
     Ok(Json(updated_task))
 }
 
-#[delete("/deletetask", data="<task_delete>")]
-async fn delete_task(task_delete: Json<TaskId>, mut db: Connection<TodoDatabase>) -> Result<Json<Task>, DatabaseError> {
+#[delete("/deletetask", data="<task_id>")]
+async fn delete_task(task_id: Json<TaskId>, mut db: Connection<TodoDatabase>) -> Result<Json<Task>, DatabaseError> {
     let deleted_task = sqlx::query_as::<_, Task>("DELETE FROM tasks WHERE id = $1 RETURNING *")
-        .bind(task_delete.id)
+        .bind(task_id.id)
         .fetch_one(&mut *db)
         .await?;
+
     Ok(Json(deleted_task))
 }
 
@@ -92,6 +92,6 @@ fn index() -> &'static str {
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-            .attach(TodoDatabase::init())
-            .mount("/", routes![index, add_task, read_task, edit_task, delete_task])
+        .attach(TodoDatabase::init())
+        .mount("/", routes![index, add_task, read_tasks, edit_task, delete_task])
 }
