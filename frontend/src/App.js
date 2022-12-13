@@ -3,76 +3,84 @@ import "./App.css";
 import { useState, useEffect } from "react";
 
 
-function Todo({ todo, index, removeTodo }) {
+const URL = 'http://localhost:3005/tasks';
+
+function Todo({ text, index, handleDelete }) {
     return (
         <div className="todo">
-            <span>{todo}</span>
+            <span>{text}</span>
             <div>
-                <button onClick={() => removeTodo(index)}>X</button>
+                <button onClick={() => handleDelete(index)}>X</button>
             </div>
         </div>
     );
 }
 
-function FormTodo({ addTodo }) {
+function FormTodo({ isLoading }) {
     const [value, setValue] = useState("");
 
-    const handleSubmit = e => {
-        e.preventDefault();
-        if (!value) return;
-        addTodo(value);
-        setValue("");
+    const handleSubmit = async () => {
+        const doc = {
+            item: value
+        };
+
+        await fetch(URL, {
+            method: "POST",
+            body: JSON.stringify(doc),
+            headers: { 'Content-type' : 'application/json' }
+        });
     };
 
     return (
-        <>
-            <form action="#" onSubmit={handleSubmit}>
-                <input className = 'input' value={value} onChange={e => setValue(e.target.value)} placeholder="Add new shit"></input>
-                <button>Add item</button>
-            </form>
-        </>
+        <form onSubmit={handleSubmit}>
+            <input className = 'input' autofocus="autofocus" required type="text" value={value} onChange={e => setValue(e.target.value)} placeholder="Add new items"></input>
+            { isLoading ? <button disabled>Sending data..</button> : <button>Add item</button> }
+        </form>
     );
 }
 
 function App() {
-    const [todos, setTodos] = useState(["This is a sampe todo"]);
-
-    const addTodo = text => {
-        const newTodos = [...todos, text];
-        setTodos(newTodos);
-    };
-
-    const removeTodo = index => {
-        const newTodos = [...todos];
-        newTodos.splice(index, 1);
-        setTodos(newTodos);
-    };
+    const [todos, setTodos] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        async function fetchTodos() {
-            const fullResponse = await fetch('http://localhost:3000/readtasks', );
-            const responseJson = await fullResponse.json();
-            setTodos(responseJson.data);
-        }
-
-        fetchTodos();
+        (async () => {
+            try {
+                const res = await fetch(URL);
+                const tasks = await res.json();
+                setTodos(tasks);
+                setIsLoading(false);
+            } catch (e) {
+                console.log("ERROR " + e);
+            }
+        })();
     }, [])
+
+    const handleDelete = async (index) => {
+        await fetch(URL + "/" + index, {
+            method: "DELETE"
+        })
+        window.location.reload(true);
+    }
 
     return (
         <div className="app">
             <div className="container">
                 <h1 className="text-center mb-4">Todo List</h1>
-                <FormTodo addTodo={addTodo} />
-                <ol>
-                    {todos.map((todo, index) => (
+                <FormTodo
+                    isLoading={isLoading}
+                />
+                {isLoading && <div>Loading...</div>}
+                <div>
+                    {todos.map((todo) => (
                         <Todo
-                        key={index}
-                        index={index}
-                        todo={todo}
-                        removeTodo={removeTodo}>
-                        </Todo>                
+                            text={todo.item}
+                            key={todo.id}
+                            index={todo.id}
+                            handleDelete={handleDelete}
+                        />
                     ))}
-                </ol>
+                </div>
             </div>
         </div>
     );

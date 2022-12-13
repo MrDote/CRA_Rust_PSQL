@@ -15,7 +15,7 @@ Return -> Json:
     }
 
 
-GET "\readtask"
+GET "\readtasks"
 Returns all tasks in the database + associated ID's
 
 Input -> None

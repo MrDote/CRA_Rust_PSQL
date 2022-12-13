@@ -1,11 +1,15 @@
 .app {
     padding: 30px;
     background-color: floralwhite;
-  }
+}
   
-  .todo {
+.todo {
     align-items: center;
     display: flex;
     font-size: 18px;
     justify-content: space-between;
-  }
+}
+
+form {
+    max-width: 50%;
+}
