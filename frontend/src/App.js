@@ -29,7 +29,9 @@ function FormTodo({ isLoading }) {
         await fetch(URL + 'addtask', {
             method: "POST",
             body: JSON.stringify(doc),
-            headers: { 'Content-type' : 'application/json' }
+            headers: { 
+                accept: 'application/json',
+            }
         });
     };
 
@@ -52,35 +54,59 @@ function App() {
                     method: 'GET',
                     headers: {
                         accept: 'application/json',
-                        // 'Access-Control-Allow-Origin':URL + "readtasks",
                     }
                 });
                 // const res = await fetch(URL);
                 const tasks = await res.json();
-                console.log(tasks);
+                console.log(tasks.length);
                 setTodos(tasks);
                 setIsLoading(false);
+
             } catch (e) {
                 console.log("ERROR " + e);
             }
         })();
-    }, [])
+    }, []);
 
     const handleDelete = async (index) => {
         const doc = {
-            "id" : parseInt(index)
-        }
+            id : index
+        };
 
         // await fetch(URL + "/" + index, {
         //     method: "DELETE"
         // })
         await fetch(URL + "deletetask", {
-            method: "DELETE",
-            body: JSON.stringify(doc)
+            method: "POST",
+            body: JSON.stringify(doc),
+            headers: {
+                accept: 'application/json',
+            }
         });
 
-        const res = await fetch(URL + "readtasks");
+
+        // const handleSubmit = async () => {
+        //     const doc = {
+        //         item: value
+        //     };
+    
+        //     await fetch(URL + 'addtask', {
+        //         method: "POST",
+        //         body: JSON.stringify(doc),
+        //         headers: { 
+        //             accept: 'application/json',
+        //         }
+        //     });
+        // };
+
+        const res = await fetch(URL + "readtasks", {
+            method: 'GET',
+            headers: {
+            accept: 'application/json',
+            }
+        });
         const tasks = await res.json();
+        console.log(tasks);
         setTodos(tasks);
         setIsLoading(false);
     }
@@ -94,7 +120,7 @@ function App() {
                 />
                 {isLoading && <div>Loading...</div>}
                 <div>
-                    {todos.map((todo) => (
+                    {todos.length && todos.map((todo) => (
                         <Todo
                             text={todo.item}
                             key={todo.id}

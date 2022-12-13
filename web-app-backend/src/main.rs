@@ -42,7 +42,7 @@ impl Fairing for CORS {
 
     async fn on_response<'r>(&self, _request: &'r Something<'_>, response: &mut Response<'r>) {
         response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
-        response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS"));
+        response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, DELETE, OPTIONS"));
         response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
     }
@@ -96,7 +96,7 @@ async fn edit_task(task_update: Json<Task>, mut db: Connection<TodoDatabase>) ->
     Ok(Json(updated_task))
 }
 
-#[delete("/deletetask", data="<task_id>")]
+#[post("/deletetask", data="<task_id>")]
 async fn delete_task(task_id: Json<TaskId>, mut db: Connection<TodoDatabase>) -> Result<Json<Task>, DatabaseError> {
     let deleted_task = sqlx::query_as::<_, Task>("DELETE FROM tasks WHERE id = $1 RETURNING *")
         .bind(task_id.id)
