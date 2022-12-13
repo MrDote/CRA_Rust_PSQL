@@ -1,9 +1,10 @@
 import React from "react";
-import "./App.css";
 import { useState, useEffect } from "react";
 
 
-const URL = 'http://localhost:3005/tasks';
+// const URL = 'http://localhost:3005/tasks';
+const URL = 'http://localhost:8000/';
+
 
 function Todo({ text, index, handleDelete }) {
     return (
@@ -24,7 +25,8 @@ function FormTodo({ isLoading }) {
             item: value
         };
 
-        await fetch(URL, {
+        // await fetch(URL, {
+        await fetch(URL + 'addtask', {
             method: "POST",
             body: JSON.stringify(doc),
             headers: { 'Content-type' : 'application/json' }
@@ -33,7 +35,7 @@ function FormTodo({ isLoading }) {
 
     return (
         <form onSubmit={handleSubmit}>
-            <input className = 'input' autofocus="autofocus" required type="text" value={value} onChange={e => setValue(e.target.value)} placeholder="Add new items"></input>
+            <input className = 'input' autoFocus="autofocus" required type="text" value={value} onChange={e => setValue(e.target.value)} placeholder="Add new items"></input>
             { isLoading ? <button disabled>Sending data..</button> : <button>Add item</button> }
         </form>
     );
@@ -46,8 +48,16 @@ function App() {
     useEffect(() => {
         (async () => {
             try {
-                const res = await fetch(URL);
+                const res = await fetch(URL + "readtasks", {
+                    method: 'GET',
+                    headers: {
+                        accept: 'application/json',
+                        // 'Access-Control-Allow-Origin':URL + "readtasks",
+                    }
+                });
+                // const res = await fetch(URL);
                 const tasks = await res.json();
+                console.log(tasks);
                 setTodos(tasks);
                 setIsLoading(false);
             } catch (e) {
@@ -57,10 +67,22 @@ function App() {
     }, [])
 
     const handleDelete = async (index) => {
-        await fetch(URL + "/" + index, {
-            method: "DELETE"
-        })
-        window.location.reload(true);
+        const doc = {
+            "id" : parseInt(index)
+        }
+
+        // await fetch(URL + "/" + index, {
+        //     method: "DELETE"
+        // })
+        await fetch(URL + "deletetask", {
+            method: "DELETE",
+            body: JSON.stringify(doc)
+        });
+
+        const res = await fetch(URL + "readtasks");
+        const tasks = await res.json();
+        setTodos(tasks);
+        setIsLoading(false);
     }
 
     return (

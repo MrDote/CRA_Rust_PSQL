@@ -60,6 +60,7 @@ async fn read_tasks(mut db: Connection<TodoDatabase>) -> Result<Json<Vec<Task>>,
         .fetch_all(&mut *db)
         .await?;
 
+    println!("{}", all_tasks[0].id);
     Ok(Json(all_tasks))
 }
 
