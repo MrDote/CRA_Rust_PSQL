@@ -42,7 +42,7 @@ impl Fairing for CORS {
 
     async fn on_response<'r>(&self, _request: &'r Something<'_>, response: &mut Response<'r>) {
         response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
-        response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS"));
+        response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS, DELETE"));
         response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
     }
@@ -80,6 +80,14 @@ async fn read_tasks(mut db: Connection<TodoDatabase>) -> Result<Json<Vec<Task>>,
     let all_tasks = sqlx::query_as::<_, Task>("SELECT * FROM tasks")
         .fetch_all(&mut *db)
         .await?;
+    if all_tasks.len() == 0 {
+        let empty_task = vec![Task{
+            id: 1,
+            item: String::from("This list is empty")
+        }];
+        return Ok(Json(empty_task))
+    }
+    
 
     Ok(Json(all_tasks))
 }
