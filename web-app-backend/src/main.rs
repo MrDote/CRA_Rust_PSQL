@@ -2,6 +2,10 @@
     
 use rocket::{serde::{Deserialize, json::Json, Serialize}, response::{Responder, self}, http::{Status}, Request};
 use rocket_db_pools::{Database, Connection};
+use rocket::http::Header;
+use rocket::{Request as Something, Response};
+use rocket::fairing::{Fairing, Info, Kind};
+
 
 #[derive(Deserialize, Serialize, sqlx::FromRow)]
 #[serde(crate = "rocket::serde")]
@@ -25,7 +29,24 @@ struct TaskId {
 #[derive(Database)]
 #[database("todo")]
 struct TodoDatabase(sqlx::PgPool);
+pub struct CORS;
 
+#[rocket::async_trait]
+impl Fairing for CORS {
+    fn info(&self) -> Info {
+        Info {
+            name: "Add CORS headers to responses",
+            kind: Kind::Response
+        }
+    }
+
+    async fn on_response<'r>(&self, _request: &'r Something<'_>, response: &mut Response<'r>) {
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS"));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+    }
+}
 struct DatabaseError(rocket_db_pools::sqlx::Error);
 
 impl<'r> Responder<'r, 'r> for DatabaseError {
@@ -94,5 +115,6 @@ fn index() -> &'static str {
 fn rocket() -> _ {
     rocket::build()
         .attach(TodoDatabase::init())
+        .attach(CORS)
         .mount("/", routes![index, add_task, read_tasks, edit_task, delete_task])
 }
