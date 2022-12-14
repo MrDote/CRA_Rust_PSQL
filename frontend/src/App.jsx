@@ -34,21 +34,16 @@ function App() {
             id : index
         };
 
-        await fetch(URL + "deletetask", {
+        const response = await fetch(URL + "deletetask", {
             method: "POST",
             body: JSON.stringify(doc)
         });
+        const task = await response.json();
+        updateTodos((prev) => prev.filter((item) => item.id !== task.id));
+    }
 
-        const res = await fetch(URL + "readtasks", {
-            method: 'GET',
-            headers: {
-            accept: 'application/json',
-            }
-        });
-        const tasks = await res.json();
-        console.log(tasks);
-        setTodos(tasks);
-        setIsLoading(false);
+    const updateTodos = (items) => {
+        setTodos(items)
     }
 
     return (
@@ -57,6 +52,7 @@ function App() {
                 <h1 className="text-center mb-4">Todo List</h1>
                 <FormTodo
                     isLoading={isLoading}
+                    updateTodos={updateTodos}
                 />
                 {isLoading && <div>Loading...</div>}
                 <div>

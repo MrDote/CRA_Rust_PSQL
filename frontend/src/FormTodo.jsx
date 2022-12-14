@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export default function FormTodo({ isLoading }) {
+export default function FormTodo({ isLoading , updateTodos }) {
     const [value, setValue] = useState("");
 
     const handleSubmit = async (e) => {
@@ -14,12 +14,15 @@ export default function FormTodo({ isLoading }) {
             const response = await fetch('http://localhost:8000/addtask', {
                 method: "POST",
                 body: JSON.stringify(doc)
-                // headers: {
-                //     "Content-Type": "application/json",
-                // }
             });
+            // For res returning all items
+            // const tasks = await response.json();
+            // updateTodos(tasks);
+            // For res returning added item
+            const task = await response.json();
+            updateTodos(prev => [...prev, task]);
+            setValue('');
 
-            window.location = "/";
         } catch (err) {
             console.error(err.message)
         }

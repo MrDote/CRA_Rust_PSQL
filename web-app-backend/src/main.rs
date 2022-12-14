@@ -61,6 +61,7 @@ impl From<rocket_db_pools::sqlx::Error> for DatabaseError {
     }
 }
 
+// For res to return added item
 #[post("/addtask", data="<task>")]
 async fn add_task(task: Json<TaskItem<'_>>, mut db: Connection<TodoDatabase>) -> Result<Json<Task>, DatabaseError> {
     println!("You got here");
@@ -74,6 +75,25 @@ async fn add_task(task: Json<TaskItem<'_>>, mut db: Connection<TodoDatabase>) ->
     
     Ok(Json(added_task))
 }
+
+// For res to return all items
+// #[post("/addtask", data="<task>")]
+// async fn add_task(task: Json<TaskItem<'_>>, mut db: Connection<TodoDatabase>) -> Result<Json<Vec<Task>>, DatabaseError> {
+//     println!("You got here");
+
+//     sqlx::query_as::<_, Task>("INSERT INTO tasks (item) VALUES ($1)")
+//         .bind(task.item)
+//         .fetch_optional(&mut *db)
+//         .await?;
+
+//     println!("You got almost to the end");
+
+//     let all_tasks = sqlx::query_as::<_, Task>("SELECT * FROM tasks")
+//         .fetch_all(&mut *db)
+//         .await?;
+    
+//     Ok(Json(all_tasks))
+// }
 
 #[get("/readtasks")]
 async fn read_tasks(mut db: Connection<TodoDatabase>) -> Result<Json<Vec<Task>>, DatabaseError> {
