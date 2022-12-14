@@ -4,7 +4,6 @@ export default function FormTodo({ isLoading , updateTodos }) {
     const [value, setValue] = useState("");
 
     const handleSubmit = async (e) => {
-
         e.preventDefault();
 
         try {
@@ -31,9 +30,10 @@ export default function FormTodo({ isLoading , updateTodos }) {
     return (
         <form onSubmit={handleSubmit}>
             <input 
-                className='input'
+                className=''
                 autoFocus="autofocus" 
-                required type="text" 
+                required 
+                type="text" 
                 value={value} 
                 onChange={e => setValue(e.target.value)} 
                 placeholder="Add new items"

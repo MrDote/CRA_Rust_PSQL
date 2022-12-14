@@ -3,7 +3,6 @@ import FormTodo from "./FormTodo.jsx";
 import Todo from './Todo.jsx';
 
 
-// const URL = 'http://localhost:3005/tasks';
 const URL = 'http://localhost:8000/';
 
 
@@ -14,10 +13,7 @@ function App() {
     useEffect(() => {
         (async () => {
             try {
-                const res = await fetch(URL + "readtasks", {
-                    method: 'GET'
-                });
-                // const res = await fetch(URL);
+                const res = await fetch(URL + "readtasks");
                 const tasks = await res.json();
                 console.log(tasks.length);
                 setTodos(tasks);
@@ -47,27 +43,28 @@ function App() {
     }
 
     return (
-        <div className="app">
-            <div className="container">
-                <h1 className="text-center mb-4">Todo List</h1>
+        <div className="">
+            <div className="">
+                <h1 className="">Todo List</h1>
                 <FormTodo
                     isLoading={isLoading}
                     updateTodos={updateTodos}
                 />
                 {isLoading && <div>Loading...</div>}
+                { todos.length === 0 ?
+                <p>No items in list</p>
+                :
                 <div>
-                    {todos.map((todo) => (
-                        todo.id !== 0 ? 
+                    {todos.map((todo) =>
                         <Todo
                             text={todo.item}
                             key={todo.id}
                             index={todo.id}
                             handleDelete={handleDelete}
                         /> 
-                        : 
-                        <p key='1'>{todo.item}</p>
-                    ))}
+                    )}
                 </div>
+                }
             </div>
         </div>
     );

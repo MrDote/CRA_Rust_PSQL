@@ -100,16 +100,8 @@ async fn read_tasks(mut db: Connection<TodoDatabase>) -> Result<Json<Vec<Task>>,
     let all_tasks = sqlx::query_as::<_, Task>("SELECT * FROM tasks")
         .fetch_all(&mut *db)
         .await?;
-    if all_tasks.len() == 0 {
-        let empty_task = vec![Task{
-            id: 0,
-            item: String::from("This list is empty")
-        }];
-        return Ok(Json(empty_task))
-    }
-    
 
-    println!("{}", all_tasks[0].id);
+    // println!("{}", all_tasks[0].id);
     Ok(Json(all_tasks))
 }
 
