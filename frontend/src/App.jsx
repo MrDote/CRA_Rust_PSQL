@@ -15,7 +15,6 @@ function App() {
             try {
                 const res = await fetch(URL + "readtasks");
                 const tasks = await res.json();
-                console.log(tasks.length);
                 setTodos(tasks);
                 setIsLoading(false);
 
@@ -31,7 +30,7 @@ function App() {
         };
 
         const response = await fetch(URL + "deletetask", {
-            method: "POST",
+            method: "DELETE",
             body: JSON.stringify(doc)
         });
         const task = await response.json();
